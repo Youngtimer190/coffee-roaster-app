@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+	<meta name="theme-color" content="#6F4E37">
+	<meta name="description" content="Aplikacja do śledzenia profili i partii palenia kawy">
+	<title>Coffee Roaster Pro</title>
+
+	<!-- iOS PWA meta tags -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="default">
+	<meta name="apple-mobile-web-app-title" content="Coffee Roaster">
+	<meta name="mobile-web-app-capable" content="yes">
+
+	<!-- iOS icons -->
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.svg">
+
+	<!-- Manifest -->
+	<link rel="manifest" href="manifest.json">
+
+	<!-- Preload font -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" href="css/style.css">
+
+	<!-- NoSleep.js for iOS Wake Lock -->
+	<script src="https://unpkg.com/nosleep.js@0.12.0/dist/NoSleep.min.js"></script>
+
+ <!-- Supabase SDK -->
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+ <!-- Konfiguracja Supabase - zmienne z Vercel Environment Variables -->
+ <script>
+  // Te wartości będą wstrzykiwane przez Vercel podczas deploymentu
+  // W Environment Variables Vercela ustaw: SUPABASE_URL i SUPABASE_ANON_KEY
+  window.SUPABASE_URL = '%SUPABASE_URL%';
+  window.SUPABASE_ANON_KEY = '%SUPABASE_ANON_KEY%';
+ </script>
+ <script src="supabase-config.js"></script>
+</head>
+<body>
+	<!-- Nawigacja -->
+	<nav class="navbar">
+		<div class="nav-brand">
+			<span class="logo">
+				<svg viewBox="0 0 24 24"><path d="M2 21V19H20V21H2ZM20 8V5H22V8C22 9.1 21.55 10 21 10V8H20ZM18 8H19V10C19.55 10 20 10.9 20 12V17H2V12C2 10.9 2.45 10 3 10V8H4C4 5.79 6.69 4 10 4H14C17.31 4 20 5.79 20 8ZM6 8H18C18 6.9 16.21 6 14 6H10C7.79 6 6 6.9 6 8ZM18 12H4V15H18V12Z"/></svg>
+			</span>
+			<span class="brand-name">Coffee Roaster</span>
+		</div>
+		<div class="nav-menu">
+			<button class="nav-btn active" data-view="dashboard">
+				<span class="icon">
+					<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+				</span>
+				<span>Panel</span>
+			</button>
+			<button class="nav-btn" data-view="profiles">
+				<span class="icon">
+					<svg viewBox="0 0 24 24"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM9 17H7V10H9V17ZM13 17H11V7H13V17ZM17 17H15V13H17V17Z"/></svg>
+				</span>
+				<span>Profile</span>
+			</button>
+			<button class="nav-btn" data-view="batches">
+				<span class="icon">
+					<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z"/></svg>
+				</span>
+				<span>Partie</span>
+			</button>
+			<button class="nav-btn" data-view="calculator">
+				<span class="icon">
+					<svg viewBox="0 0 24 24"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM13 18H11V16H13V18ZM13 14H11V12H13V14ZM13 10H11V8H13V10ZM17 18H14V16H17V18ZM17 14H14V12H17V14ZM17 10H14V8H17V10ZM9 18H7V16H9V18ZM9 14H7V12H9V14ZM9 10H7V8H9V10Z"/></svg>
+				</span>
+				<span>Kalkulator</span>
+			</button>
+		</div>
+		<button class="menu-toggle" id="menuToggle">☰</button>
+	</nav>
+
+	<!-- Główna zawartość -->
+	<main class="main-content">
+		<!-- Panel główny -->
+		<section id="dashboard" class="view active">
+			<header class="page-header">
+				<h1>Panel</h1>
+				<p class="subtitle">Przegląd Twojej aktywności</p>
+			</header>
+
+			<div class="dashboard-stats">
+				<div class="stat-card">
+					<div class="stat-icon">
+						<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7H11V13L16.25 16.15L17 14.92L12.5 12.25V7Z"/></svg>
+					</div>
+					<div class="stat-info">
+						<span class="stat-value" id="totalBatches">0</span>
+						<span class="stat-label">Partii</span>
+					</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-icon">
+						<svg viewBox="0 0 24 24"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM9 13V19H7V13H9ZM15 15V19H17V15H15ZM13 11V19H11V11H13Z"/></svg>
+					</div>
+					<div class="stat-info">
+						<span class="stat-value" id="totalProfiles">0</span>
+						<span class="stat-label">Profili</span>
+					</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-icon">
+						<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.62L12 2L9.19 8.62L2 9.24L7.46 13.97L5.82 21L12 17.27Z"/></svg>
+					</div>
+					<div class="stat-info">
+						<span class="stat-value" id="avgRating">0.0</span>
+						<span class="stat-label">Średnia</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="recent-batches">
+				<h2>Ostatnie partie</h2>
+				<div id="recentBatchesList" class="batches-grid">
+					<!-- Dynamicznie wypełniane -->
+				</div>
+			</div>
+		</section>
+
+		<!-- Profile palenia -->
+		<section id="profiles" class="view">
+			<header class="page-header">
+				<h1>Profile</h1>
+				<p class="subtitle">Zapisane profile temperatury i czasu</p>
+			</header>
+			<button class="btn btn-primary" id="addProfileBtn">+ Nowy profil</button>
+
+			<div id="profilesList" class="profiles-grid">
+				<!-- Dynamicznie wypełniane -->
+			</div>
+
+		</section>
+
+		<!-- Rejestr partii -->
+		<section id="batches" class="view">
+			<header class="page-header">
+				<h1>Partie</h1>
+				<p class="subtitle">Historia wszystkich partii palenia</p>
+			</header>
+			<button class="btn btn-primary" id="addBatchBtn">+ Nowa partia</button>
+			<div class="filters">
+				<input type="text" id="batchSearch" placeholder="Szukaj partii...">
+				<select id="batchFilter">
+					<option value="all">Wszystkie</option>
+					<option value="light">Jasne</option>
+					<option value="medium">Średnie</option>
+					<option value="dark">Ciemne</option>
+				</select>
+			</div>
+
+			<div id="batchesList" class="batches-list">
+				<!-- Dynamicznie wypełniane -->
+			</div>
+
+		</section>
+
+		<!-- Kalkulator -->
+		<section id="calculator" class="view">
+			<header class="page-header">
+				<h1>Kalkulator</h1>
+				<p class="subtitle">Oblicz parametry palenia</p>
+			</header>
+
+			<div class="calculator-grid">
+				<div class="calc-card">
+					<h3>Utrata masy</h3>
+					<div class="calc-form">
+						<div class="form-group">
+							<label>Waga przed paleniem (g)</label>
+							<input type="number" id="weightBefore" placeholder="np. 1000">
+						</div>
+						<div class="form-group">
+							<label>Waga po paleniu (g)</label>
+							<input type="number" id="weightAfter" placeholder="np. 850">
+						</div>
+						<button class="btn btn-primary" id="calcLossBtn">Oblicz</button>
+						<div class="calc-result" id="lossResult">
+							<span class="result-value">--</span>
+							<span class="result-label">% utraty masy</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="calc-card">
+					<h3>Wzrost temperatury</h3>
+					<div class="calc-form">
+						<div class="form-row">
+							<div class="form-group">
+								<label>Temp. startowa (°C)</label>
+								<input type="number" id="rorStart" placeholder="np. 150">
+							</div>
+							<div class="form-group">
+								<label>Temp. końcowa (°C)</label>
+								<input type="number" id="rorEnd" placeholder="np. 200">
+							</div>
+						</div>
+						<div class="form-group">
+							<label>Czas (min)</label>
+							<input type="number" id="rorTime" step="0.1" placeholder="np. 5">
+						</div>
+						<button class="btn btn-primary" id="calcRorBtn">Oblicz</button>
+						<div class="calc-result" id="rorResult">
+							<span class="result-value">--</span>
+							<span class="result-label">°C/min (ROR)</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="calc-card">
+					<h3>Estymowany czas</h3>
+					<div class="calc-form">
+						<div class="form-group">
+							<label>Docelona temperatura (°C)</label>
+							<input type="number" id="targetTemp" placeholder="np. 210">
+						</div>
+						<div class="form-group">
+							<label>Typ palenia</label>
+							<select id="roastType">
+								<option value="1.5">Jasne (1.5°C/min)</option>
+								<option value="1.0" selected>Średnie (1.0°C/min)</option>
+								<option value="0.7">Ciemne (0.7°C/min)</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>Aktualna temperatura (°C)</label>
+							<input type="number" id="currentTemp" placeholder="np. 180">
+						</div>
+						<button class="btn btn-primary" id="calcTimeBtn">Oblicz</button>
+						<div class="calc-result" id="timeResult">
+							<span class="result-value">--</span>
+							<span class="result-label">min do końca</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<!-- Toast notifications -->
+	<div id="toastContainer" class="toast-container"></div>
+
+
+	<script src="js/app.js"></script>
+<!-- Modal profilu -->
+<div id="profileModal" class="modal">
+<div class="modal-content">
+<header class="modal-header">
+<h2 id="profileModalTitle">Nowy profil</h2>
+<button class="modal-close">&times;</button>
+</header>
+<form id="profileForm" class="modal-form">
+<div class="form-group">
+<label for="profileName">Nazwa profilu *</label>
+<input type="text" id="profileName" required placeholder="np. Light Roast Brazil">
+</div>
+
+<!-- Stoper -->
+<div class="form-group">
+<label>Stoper</label>
+<div class="stopwatch-placeholder" id="stopwatchPlaceholder"></div>
+<div class="stopwatch" id="stopwatch">
+<div class="stopwatch-display">
+<span id="stopwatchTime">00:00:00</span>
+</div>
+<div class="stopwatch-controls">
+<button type="button" class="btn btn-secondary" id="stopwatchStart">
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" style="margin-right: 6px; vertical-align: middle; display: inline-block;"><polygon points="8,5 19,12 8,19" fill="#1A1A1A" style="fill: #1A1A1A;"/></svg>
+	Start
+</button>
+<button type="button" class="btn btn-secondary" id="stopwatchPause">
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" style="margin-right: 6px; vertical-align: middle; display: inline-block;"><rect x="6" y="5" width="4" height="14" fill="#1A1A1A" style="fill: #1A1A1A;"/><rect x="14" y="5" width="4" height="14" fill="#1A1A1A" style="fill: #1A1A1A;"/></svg>
+	Stop
+</button>
+<button type="button" class="btn btn-secondary" id="stopwatchReset">
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" style="margin-right: 6px; vertical-align: middle; display: inline-block;"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="#1A1A1A" style="fill: #1A1A1A;"/></svg>
+	Reset
+</button>
+</div>
+<div class="first-crack-section">
+<button type="button" class="btn btn-primary" id="firstCrackBtn">First Crack</button>
+<div class="first-crack-result" id="firstCrackResult" style="display: none;">
+<span class="first-crack-label">Czas po FC:</span>
+<span class="first-crack-value" id="firstCrackPercent">0%</span>
+</div>
+</div>
+</div>
+</div>
+
+<div class="form-row">
+<div class="form-group">
+<label for="beanType">Typ ziarna</label>
+<select id="beanType">
+<option value="arabica">Arabica</option>
+<option value="robusta">Robusta</option>
+<option value="blend">Mieszanka</option>
+</select>
+</div>
+<div class="form-group">
+<label for="origin">Pochodzenie</label>
+<input type="text" id="origin" placeholder="np. Brazylia, Etiopia">
+</div>
+</div>
+
+<div class="form-group">
+<label>Etapy palenia</label>
+<div id="roastStages" class="stages-container">
+<div class="stage-row" data-stage="1">
+<button type="button" class="btn-remove-stage">×</button>
+<div class="stage-header">
+<span class="stage-num">1</span>
+</div>
+<div class="stage-fields">
+<div class="stage-field">
+	<label class="stage-label">Temp.</label>
+	<input type="number" class="stage-temp" placeholder="°C" min="0" max="300">
+</div>
+<div class="stage-field">
+	<label class="stage-label">Czas</label>
+	<input type="text" class="stage-time" placeholder="mm:ss" value="00:00">
+</div>
+<div class="stage-field stage-field-note">
+	<label class="stage-label">Notatka</label>
+	<input type="text" class="stage-note" placeholder="np. first crack">
+</div>
+</div>
+</div>
+</div>
+<button type="button" class="btn btn-secondary btn-small" id="addStageBtn">
++ Dodaj etap
+</button>
+</div>
+
+<div class="form-group">
+<label for="profileNotes">Notatki</label>
+<textarea id="profileNotes" rows="3" placeholder="Dodatkowe informacje o profilu..."></textarea>
+</div>
+
+<div class="form-actions">
+<button type="button" class="btn btn-secondary modal-cancel">Anuluj</button>
+<button type="submit" class="btn btn-primary">Zapisz profil</button>
+</div>
+</form>
+</div>
+</div>
+
+<!-- Modal partii -->
+<div id="batchModal" class="modal">
+<div class="modal-content">
+<header class="modal-header">
+<h2 id="batchModalTitle">Nowa partia</h2>
+<button class="modal-close">&times;</button>
+</header>
+<form id="batchForm" class="modal-form">
+<div class="form-row">
+<div class="form-group">
+<label for="batchDate">Data *</label>
+<input type="date" id="batchDate" required>
+</div>
+<div class="form-group">
+<label for="batchProfile">Profil</label>
+<select id="batchProfile">
+<option value="">-- Wybierz profil --</option>
+</select>
+</div>
+</div>
+
+<div class="form-row">
+<div class="form-group">
+<label for="batchWeight">Ilość ziarna (g) *</label>
+<input type="number" id="batchWeight" required min="1" placeholder="np. 500">
+</div>
+<div class="form-group">
+<label for="batchRoastLevel">Poziom wypalenia</label>
+<select id="batchRoastLevel">
+<option value="green">Zielona</option>
+<option value="cinnamon">Cynamonowa</option>
+<option value="light">Jasna</option>
+<option value="medium" selected>Średnia</option>
+<option value="medium-dark">Średnio-ciemna</option>
+<option value="dark">Ciemna</option>
+<option value="french">French</option>
+<option value="italian">Italian</option>
+</select>
+</div>
+</div>
+
+<div class="form-row">
+<div class="form-group">
+<label for="batchDuration">Czas palenia (min)</label>
+<input type="number" id="batchDuration" min="0" max="60" step="0.1" placeholder="np. 12.5">
+</div>
+<div class="form-group">
+<label for="batchFinalTemp">Temperatura końcowa (°C)</label>
+<input type="number" id="batchFinalTemp" min="0" max="300" placeholder="np. 205">
+</div>
+</div>
+
+<div class="form-group">
+<label for="batchRating">Ocena (1-10)</label>
+<div class="rating-input">
+<input type="range" id="batchRating" min="1" max="10" value="5">
+<span class="rating-value">5</span>
+</div>
+</div>
+
+<div class="form-group">
+<label for="batchNotes">Notatki / obserwacje</label>
+<textarea id="batchNotes" rows="4" placeholder="Jak wyszła kawa? Smak, aromat, co poprawić..."></textarea>
+</div>
+
+<div class="form-actions">
+<button type="button" class="btn btn-secondary modal-cancel">Anuluj</button>
+<button type="submit" class="btn btn-primary">Zapisz partię</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal podglądu profilu -->
+<div id="profileViewModal" class="modal">
+<div class="modal-content">
+<header class="modal-header">
+<h2 id="profileViewName">Nazwa profilu</h2>
+<button class="modal-close">&times;</button>
+</header>
+<div class="profile-view-body">
+<div class="profile-view-info">
+<span class="profile-view-type" id="profileViewType">Arabica</span>
+<span class="profile-view-origin" id="profileViewOrigin">Pochodzenie</span>
+</div>
+
+<div class="profile-view-stages" id="profileViewStages">
+<!-- Etapy będą tutaj -->
+</div>
+
+<div class="profile-view-notes" id="profileViewNotes" style="display: none;">
+<h4>Notatki</h4>
+<p></p>
+</div>
+
+<button class="btn btn-primary btn-start-roasting" id="startRoastingBtn">
+🔥 Rozpocznij palenie
+</button>
+</div>
+</div>
+</div>
+
+<!-- Modal aktywnego palenia -->
+<div id="roastingModal" class="modal">
+<div class="modal-content roasting-modal-content">
+<header class="modal-header">
+<h2>Palenie w toku</h2>
+<button class="modal-close">&times;</button>
+</header>
+<div class="roasting-body">
+<div class="roasting-stopwatch">
+<span id="roastingTimer">00:00:00</span>
+</div>
+
+<div class="roasting-current-stage" id="roastingCurrentStage">
+<span class="current-stage-label">Aktualny etap</span>
+<span class="current-stage-name">Przygotowanie</span>
+</div>
+
+<div class="roasting-stages" id="roastingStagesList">
+<!-- Etapy palenia -->
+</div>
+
+<div class="roasting-controls">
+<button class="btn btn-secondary" id="roastingPauseBtn">
+⏸️ Pauza
+</button>
+<button class="btn btn-warning" id="roastingFCBtn">
+⚡ First Crack
+</button>
+<button class="btn btn-primary" id="finishRoastingBtn" style="display: none;">
+💾 Zapisz partię
+</button>
+<button class="btn btn-secondary" id="cancelRoastingBtn">
+❌ Anuluj
+</button>
+</div>
+
+<div class="roasting-fc-result" id="roastingFCResult" style="display: none;">
+<div class="fc-comparison">
+<div class="fc-actual">
+<span class="fc-label">Rzeczywisty FC:</span>
+<span class="fc-value" id="fcActualTime">--:--</span>
+</div>
+<div class="fc-estimated">
+<span class="fc-label">Szacowany FC:</span>
+<span class="fc-value" id="fcEstimatedTime">--:--</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body>
+</html>
