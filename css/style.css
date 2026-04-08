@@ -1843,3 +1843,74 @@ select {
 .roasting-actions .btn {
  flex: 1;
 }
+
+/* ===== SKELETON LOADING ===== */
+.skeleton-card {
+ background: var(--surface);
+ border-radius: var(--radius-lg);
+ padding: 20px;
+ border: 1px solid var(--border);
+ animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton {
+ background: linear-gradient(90deg, var(--border) 25%, var(--surface-hover) 50%, var(--border) 75%);
+ background-size: 200% 100%;
+ animation: skeleton-shimmer 1.5s ease-in-out infinite;
+ border-radius: var(--radius-sm);
+}
+
+.skeleton-title {
+ height: 20px;
+ width: 60%;
+ margin-bottom: 12px;
+}
+
+.skeleton-text {
+ height: 14px;
+ width: 80%;
+ margin-bottom: 8px;
+}
+
+.skeleton-text.short {
+ width: 40%;
+}
+
+.skeleton-number {
+ height: 32px;
+ width: 50%;
+ margin: 8px auto;
+}
+
+.skeleton-circle {
+ width: 40px;
+ height: 40px;
+ border-radius: 50%;
+ margin: 0 auto 12px;
+}
+
+@keyframes skeleton-pulse {
+ 0%, 100% { opacity: 1; }
+ 50% { opacity: 0.7; }
+}
+
+@keyframes skeleton-shimmer {
+ 0% { background-position: 200% 0; }
+ 100% { background-position: -200% 0; }
+}
+
+/* Fade in animation dla nowych elementów */
+.profile-card, .batch-card, .stat-card {
+ animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+ from {
+ opacity: 0;
+ transform: translateY(10px);
+ }
+ to {
+ opacity: 1;
+ transform: translateY(0);
+ }
+}
