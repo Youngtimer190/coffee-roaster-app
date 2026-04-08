@@ -32,13 +32,7 @@
  <!-- Supabase SDK -->
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
- <!-- Konfiguracja Supabase - zmienne z Vercel Environment Variables -->
- <script>
-  // Te wartości będą wstrzykiwane przez Vercel podczas deploymentu
-  // W Environment Variables Vercela ustaw: SUPABASE_URL i SUPABASE_ANON_KEY
-  window.SUPABASE_URL = '%SUPABASE_URL%';
-  window.SUPABASE_ANON_KEY = '%SUPABASE_ANON_KEY%';
- </script>
+ <!-- Konfiguracja Supabase -->
  <script src="supabase-config.js"></script>
 </head>
 <body>

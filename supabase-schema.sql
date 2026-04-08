@@ -25,7 +25,6 @@ CREATE TABLE profiles (
 
 -- Indeksy dla profiles
 CREATE INDEX idx_profiles_created_at ON profiles(created_at DESC);
-CREATE INDEX idx_profiles_name ON profiles USING gin(to_tsvector('polish', name));
 
 -- =====================================================
 -- TABELA BATCHES (Partie palenia)
