@@ -519,7 +519,7 @@ async saveProfile() {
     this.lastStageIndex = 0;
     document.getElementById('roastingFCBtn').style.display = 'inline-flex';
     document.getElementById('finishRoastingBtn').style.display = 'none';
-    document.getElementById('roastingPauseBtn').innerHTML = '⏸️ Pauza';
+    document.getElementById('roastingPauseBtn').innerHTML = 'Pauza';
     document.getElementById('roastingPauseBtn').classList.remove('paused');
     this.roastingPaused = false;
     modal.classList.add('active');
@@ -660,14 +660,14 @@ async saveProfile() {
       this.requestWakeLock();
       if (this.noSleep) this.noSleep.enable();
       this.roastingInterval = setInterval(() => { this.roastingTime++; this.updateRoastingDisplay(); this.checkStagesProgress(); }, 1000);
-      btn.innerHTML = '⏸️ Pauza';
+      btn.innerHTML = 'Pauza';
       btn.classList.remove('paused');
     } else {
       this.roastingPaused = true;
       if (this.roastingInterval) { clearInterval(this.roastingInterval); this.roastingInterval = null; }
       this.releaseWakeLock();
       this.stopIosWakeLock();
-      btn.innerHTML = '▶️ Wznów';
+      btn.innerHTML = 'Wznów';
       btn.classList.add('paused');
     }
   }
