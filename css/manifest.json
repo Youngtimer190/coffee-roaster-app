@@ -1,0 +1,55 @@
+{
+  "name": "Coffee Roaster Pro",
+  "short_name": "CoffeeRoaster",
+  "description": "Profesjonalna aplikacja do śledzenia profili i partii palenia kawy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0d0c",
+  "theme_color": "#0f0d0c",
+  "orientation": "portrait",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "images/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "images/icon-192.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "images/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "images/icon-192.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["food", "lifestyle", "utilities"],
+  "lang": "pl",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Nowa partia",
+      "short_name": "Nowa",
+      "description": "Szybkie dodanie nowej partii",
+      "url": "/?action=new-batch"
+    },
+    {
+      "name": "Nowy profil",
+      "short_name": "Profil",
+      "description": "Utwórz nowy profil palenia",
+      "url": "/?action=new-profile"
+    }
+  ]
+}
