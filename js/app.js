@@ -242,7 +242,11 @@ class CoffeeRoasterApp {
     const modal = document.getElementById('profileModal');
     document.getElementById('addProfileBtn').addEventListener('click', () => this.openProfileModal());
     modal.querySelector('.modal-close').addEventListener('click', () => this.closeProfileModal());
-    modal.querySelector('.modal-cancel').addEventListener('click', () => this.closeProfileModal());
+    modal.querySelector('.modal-cancel').addEventListener('click', () => {
+          if (confirm('Czy na pewno chcesz anulować? Wprowadzone dane zostaną utracone.')) {
+            this.closeProfileModal();
+          }
+        });
     document.getElementById('addStageBtn').addEventListener('click', () => this.addStageRow());
     document.getElementById('profileForm').addEventListener('submit', async (e) => { e.preventDefault(); await this.saveProfile(); });
     modal.addEventListener('click', (e) => { if (e.target === modal) this.closeProfileModal(); });
@@ -713,7 +717,11 @@ async saveProfile() {
     const modal = document.getElementById('batchModal');
     document.getElementById('addBatchBtn').addEventListener('click', () => this.openBatchModal());
     modal.querySelector('.modal-close').addEventListener('click', () => this.closeBatchModal());
-    modal.querySelector('.modal-cancel').addEventListener('click', () => this.closeBatchModal());
+    modal.querySelector('.modal-cancel').addEventListener('click', () => {
+          if (confirm('Czy na pewno chcesz anulować? Wprowadzone dane zostaną utracone.')) {
+            this.closeBatchModal();
+          }
+        });
     const ratingInput = document.getElementById('batchRating');
     ratingInput.addEventListener('input', (e) => modal.querySelector('.rating-value').textContent = e.target.value);
     document.getElementById('batchForm').addEventListener('submit', async (e) => { e.preventDefault(); await this.saveBatch(); });
