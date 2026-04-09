@@ -799,16 +799,6 @@ h4 { font-size: 1.125rem; }
 }
 
 /* Batch Specific */
-.batch-roast-indicator {
-  position: absolute;
-  bottom: var(--space-5);
-  right: var(--space-5);
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  box-shadow: 0 0 8px currentColor;
- opacity: 0.6;
-}
 
 .batch-date {
   font-size: 0.8125rem;
