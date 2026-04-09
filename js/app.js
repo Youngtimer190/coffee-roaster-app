@@ -547,13 +547,16 @@ async saveProfile() {
       const stageTime = parseInt(stageElements[i].dataset.time) || 0;
       if (stageTime > 0 && this.roastingTime >= stageTime) { currentStageIndex = i; break; }
     }
-    if (this.lastStageIndex !== currentStageIndex) this.playStageChangeSound();
+    const stageChanged = this.lastStageIndex !== currentStageIndex;
+ if (stageChanged) this.playStageChangeSound();
     this.lastStageIndex = currentStageIndex;
     stages.forEach(s => s.classList.remove('completed', 'active', 'upcoming'));
+ let activeStageEl = null;
     stageElements.forEach((stageEl, index) => {
       if (index < currentStageIndex) stageEl.classList.add('completed');
       else if (index === currentStageIndex) {
         stageEl.classList.add('active');
+ activeStageEl = stageEl;
         const note = stageEl.querySelector('.roasting-stage-note')?.textContent;
         const label = stageEl.querySelector('.roasting-stage-label');
         if (label && stageEl.classList.contains('stage-fc')) currentStageName = label.textContent;
@@ -561,6 +564,10 @@ async saveProfile() {
         else currentStageName = `Etap ${index + 1}`;
       } else stageEl.classList.add('upcoming');
     });
+ // Automatyczne scrollowanie do aktywnego etapu
+ if (stageChanged && activeStageEl) {
+ activeStageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+ }
     document.getElementById('roastingCurrentStage').querySelector('.current-stage-name').textContent = currentStageName;
   }
 
