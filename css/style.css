@@ -727,30 +727,75 @@ h4 { font-size: 1.125rem; }
 
 .profile-actions button {
   flex: 1;
-  padding: var(--space-3);
-  border: 1px solid var(--glass-border);
-  background: transparent;
-  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   font-size: 0.8125rem;
-  font-weight: 500;
-  transition: all var(--duration-fast);
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  transition: all var(--duration-normal) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.profile-actions button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(201, 168, 124, 0.5), rgba(212, 165, 116, 0.2), rgba(201, 168, 124, 0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.profile-actions button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, transparent 50%, rgba(255, 255, 255, 0.03) 100%);
+  pointer-events: none;
+}
+
+.profile-actions button {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.04) 100%);
   color: var(--text-primary);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 .profile-actions button:hover {
-  background: var(--glass-bg);
-  border-color: var(--glass-border-light);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.08) 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.profile-actions button:active {
+  transform: translateY(0);
 }
 
 .profile-actions .btn-delete {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.12) 0%, rgba(248, 113, 113, 0.06) 50%, rgba(248, 113, 113, 0.1) 100%);
   color: var(--error);
-  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.profile-actions .btn-delete::before {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.6), rgba(248, 113, 113, 0.2), rgba(248, 113, 113, 0.4));
 }
 
 .profile-actions .btn-delete:hover {
-  background: var(--error-bg);
-  border-color: rgba(248, 113, 113, 0.5);
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.2) 0%, rgba(248, 113, 113, 0.12) 50%, rgba(248, 113, 113, 0.16) 100%);
+  box-shadow: 0 4px 20px rgba(248, 113, 113, 0.2);
 }
 
 /* Batch Specific */
