@@ -91,8 +91,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || 'Coffee Roaster Pro', {
       body: data.body || 'Powiadomienie z aplikacji',
-      icon: '/images/icon-192.png',
-      badge: '/images/icon-96.png',
+      icon: '/images/icon-192.svg',
+      badge: '/images/icon-192.svg',
       tag: data.tag || 'general',
       requireInteraction: false
     })
