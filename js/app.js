@@ -409,9 +409,9 @@ async saveProfile() {
         ${profile.origin ? `<div class="card-body" style="margin-bottom: 8px;">📍 ${profile.origin}</div>` : ''}
         <div class="profile-info"><span>${profile.stages?.length || 0} etapów</span><span>Utworzony: ${this.formatDate(profile.createdAt)}</span></div>
         <div class="profile-actions">
-          <button onclick="app.openProfileModal('${profile.id}')">✏️ Edytuj</button>
-          <button onclick="app.useProfile('${profile.id}')">▶️ Użyj</button>
-          <button class="btn-delete" onclick="app.deleteProfile('${profile.id}')">🗑️ Usuń</button>
+          <button onclick="app.openProfileModal('${profile.id}')">Edytuj</button>
+          <button onclick="app.useProfile('${profile.id}')">Użyj</button>
+          <button class="btn-delete" onclick="app.deleteProfile('${profile.id}')">Usuń</button>
         </div>
       </div>`).join('');
   }
@@ -823,8 +823,8 @@ async saveProfile() {
         <div class="batch-detail"><span class="batch-detail-label">Temp. końcowa</span><span class="batch-detail-value">${batch.finalTemp ? batch.finalTemp + '°C' : '-'}</span></div>
       </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${batch.notes}</div>` : ''}
       <div class="profile-actions" style="margin-top: 12px;">
-        <button class="btn-edit-batch" data-id="${batch.id}">✏️ Edytuj</button>
-        <button class="btn-delete" data-id="${batch.id}">🗑️ Usuń</button>
+        <button class="btn-edit-batch" data-id="${batch.id}">Edytuj</button>
+        <button class="btn-delete" data-id="${batch.id}">Usuń</button>
       </div></div>`;
   }
 
