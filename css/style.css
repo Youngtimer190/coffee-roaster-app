@@ -801,12 +801,13 @@ h4 { font-size: 1.125rem; }
 /* Batch Specific */
 .batch-roast-indicator {
   position: absolute;
-  top: var(--space-5);
+  bottom: var(--space-5);
   right: var(--space-5);
   width: 14px;
   height: 14px;
   border-radius: 50%;
   box-shadow: 0 0 8px currentColor;
+ opacity: 0.6;
 }
 
 .batch-date {
@@ -1112,7 +1113,7 @@ h4 { font-size: 1.125rem; }
   display: flex;
   gap: var(--space-3);
   margin-top: var(--space-8);
-  padding-top: var(--space-5);
+  padding-bottom: var(--space-5);
   border-top: 1px solid var(--glass-border);
 }
 
@@ -1211,7 +1212,7 @@ select {
 }
 
 .calc-result {
-  margin-top: var(--space-5);
+  margin-bottom: var(--space-5);
   padding: var(--space-6);
   background: rgba(201, 168, 124, 0.08);
   border-radius: var(--radius-md);
@@ -1336,8 +1337,8 @@ select {
 
 /* First Crack Section */
 .first-crack-section {
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
   border-top: 1px solid var(--glass-border);
   text-align: center;
 }
@@ -1478,7 +1479,7 @@ select {
    ═══════════════════════════════════════════════════════════════════════════ */
 .toast-container {
   position: fixed;
-  top: var(--space-5);
+  bottom: var(--space-5);
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-toast);
@@ -1962,8 +1963,8 @@ select {
 .roasting-actions {
   display: flex;
   gap: var(--space-3);
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
   border-top: 1px solid var(--glass-border);
 }
 
