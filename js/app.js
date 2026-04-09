@@ -194,6 +194,14 @@ class CoffeeRoasterApp {
     if (menuToggle && navMenu) menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
   }
 
+ // Sanityzacja HTML - zapobiega XSS
+ escapeHtml(text) {
+ if (!text) return '';
+ const div = document.createElement('div');
+ div.textContent = text;
+ return div.innerHTML;
+ }
+
   formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -411,8 +419,8 @@ async saveProfile() {
     }
     container.innerHTML = this.profiles.map(profile => `
       <div class="profile-card" data-id="${profile.id}">
-        <div class="profile-header"><span class="profile-name">${profile.name}</span><span class="profile-type">${profile.beanType || 'arabica'}</span></div>
-        ${profile.origin ? `<div class="card-body" style="margin-bottom: 8px;">📍 ${profile.origin}</div>` : ''}
+        <div class="profile-header"><span class="profile-name">${this.escapeHtml(profile.name)}</span><span class="profile-type">${profile.beanType || 'arabica'}</span></div>
+        ${profile.origin ? `<div class="card-body" style="margin-bottom: 8px;">📍 ${this.escapeHtml(profile.origin)}</div>` : ''}
         <div class="profile-info"><span>${profile.stages?.length || 0} etapów</span><span>Utworzony: ${this.formatDate(profile.createdAt)}</span></div>
         <div class="profile-actions">
           <button onclick="app.openProfileModal('${profile.id}')">Edytuj</button>
@@ -458,14 +466,14 @@ async saveProfile() {
           <div class="profile-view-stage-info">
             <span class="profile-view-stage-time">${stage.time || '--:--'}</span>
             <span class="profile-view-stage-temp">${stage.temp ? stage.temp + '°C' : '--°C'}</span>
-            ${isFC ? '<span class="profile-view-stage-label">First Crack</span>' : `<span class="profile-view-stage-note">${stage.note || ''}</span>`}
+            ${isFC ? '<span class="profile-view-stage-label">First Crack</span>' : `<span class="profile-view-stage-note">${this.escapeHtml(stage.note) || ''}</span>`}
           </div></div>`;
       });
     }
     if (!hasFCStage) stagesHTML += `<div class="profile-view-stage stage-estimated-fc"><span class="profile-view-stage-num">?</span><div class="profile-view-stage-info"><span class="profile-view-stage-time">--:--</span><span class="profile-view-stage-note">Szacowany First Crack</span><span class="profile-view-stage-label estimated">Szacowany FC</span></div></div>`;
     document.getElementById('profileViewStages').innerHTML = stagesHTML;
     const notesEl = document.getElementById('profileViewNotes');
-    if (profile.notes) { notesEl.style.display = 'block'; notesEl.querySelector('p').textContent = profile.notes; }
+    if (profile.notes) { notesEl.style.display = 'block'; const pEl = notesEl.querySelector('p'); if (pEl) pEl.textContent = profile.notes; }
     else notesEl.style.display = 'none';
     this.activeProfileId = profile.id;
     modal.classList.add('active');
@@ -512,7 +520,7 @@ async saveProfile() {
           <div class="roasting-stage-info">
             <span class="roasting-stage-time">${stage.time || '--:--'}</span>
             <span class="roasting-stage-temp">${stage.temp ? stage.temp + '°C' : ''}</span>
-            ${isFC ? '<span class="roasting-stage-label">First Crack</span>' : `<span class="roasting-stage-note">${stage.note || ''}</span>`}
+            ${isFC ? '<span class="roasting-stage-label">First Crack</span>' : `<span class="roasting-stage-note">${this.escapeHtml(stage.note) || ''}</span>`}
           </div></div>`;
       });
     }
@@ -819,27 +827,26 @@ async saveProfile() {
     const profileName = batch.profileName || this.profiles.find(p => p.id === batch.profileId)?.name || 'Brak profilu';
     const roastLevelNames = { 'green': 'Zielona', 'cinnamon': 'Cynamonowa', 'light': 'Jasna', 'medium': 'Średnia', 'medium-dark': 'Średnio-ciemna', 'dark': 'Ciemna', 'french': 'French', 'italian': 'Italian' };
     return `<div class="batch-card" data-id="${batch.id}">
-      <div class="batch-header"><div><div class="batch-title">${profileName}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span></div><span class="batch-date">${this.formatDate(batch.date)}</span></div>
+      <div class="batch-header"><div><div class="batch-title">${this.escapeHtml(profileName)}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span></div><span class="batch-date">${this.formatDate(batch.date)}</span></div>
       <div class="batch-details">
         <div class="batch-detail"><span class="batch-detail-label">Ilość</span><span class="batch-detail-value">${batch.weight}g</span></div>
         <div class="batch-detail"><span class="batch-detail-label">Czas</span><span class="batch-detail-value">${batch.duration ? batch.duration + ' min' : '-'}</span></div>
         <div class="batch-detail"><span class="batch-detail-label">Temp.</span><span class="batch-detail-value">${batch.finalTemp ? batch.finalTemp + '°C' : '-'}</span></div>
         <div class="batch-detail"><span class="batch-detail-label">Ocena</span><span class="batch-detail-value">${batch.rating}/10</span></div>
-      </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${batch.notes}</div>` : ''}</div>`;
+      </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${this.escapeHtml(batch.notes)}</div>` : ''}</div>`;
   }
 
   createBatchListItemHTML(batch) {
     const profileName = batch.profileName || this.profiles.find(p => p.id === batch.profileId)?.name || 'Brak profilu';
     const roastLevelNames = { 'green': 'Zielona', 'cinnamon': 'Cynamonowa', 'light': 'Jasna', 'medium': 'Średnia', 'medium-dark': 'Średnio-ciemna', 'dark': 'Ciemna', 'french': 'French', 'italian': 'Italian' };
     return `<div class="batch-card" data-id="${batch.id}">
-      <div class="batch-roast-indicator roast-${batch.roastLevel}"></div>
-      <div class="batch-header"><div><div class="batch-title">${profileName}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span>
+      <div class="batch-header"><div><div class="batch-title">${this.escapeHtml(profileName)}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span>
       <div class="batch-rating">${'⭐'.repeat(batch.rating || 0)}${'☆'.repeat(10 - (batch.rating || 0))}</div></div><span class="batch-date">${this.formatDate(batch.date)}</span></div>
       <div class="batch-details">
         <div class="batch-detail"><span class="batch-detail-label">Ilość</span><span class="batch-detail-value">${batch.weight}g</span></div>
         <div class="batch-detail"><span class="batch-detail-label">Czas</span><span class="batch-detail-value">${batch.duration ? batch.duration + ' min' : '-'}</span></div>
         <div class="batch-detail"><span class="batch-detail-label">Temp. końcowa</span><span class="batch-detail-value">${batch.finalTemp ? batch.finalTemp + '°C' : '-'}</span></div>
-      </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${batch.notes}</div>` : ''}
+      </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${this.escapeHtml(batch.notes)}</div>` : ''}
       <div class="profile-actions" style="margin-top: 12px;">
         <button class="btn-edit-batch" data-id="${batch.id}">Edytuj</button>
         <button class="btn-delete" data-id="${batch.id}">Usuń</button>
