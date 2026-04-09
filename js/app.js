@@ -811,7 +811,6 @@ async saveProfile() {
     const profileName = batch.profileName || this.profiles.find(p => p.id === batch.profileId)?.name || 'Brak profilu';
     const roastLevelNames = { 'green': 'Zielona', 'cinnamon': 'Cynamonowa', 'light': 'Jasna', 'medium': 'Średnia', 'medium-dark': 'Średnio-ciemna', 'dark': 'Ciemna', 'french': 'French', 'italian': 'Italian' };
     return `<div class="batch-card" data-id="${batch.id}">
-      <div class="batch-roast-indicator roast-${batch.roastLevel}"></div>
       <div class="batch-header"><div><div class="batch-title">${profileName}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span></div><span class="batch-date">${this.formatDate(batch.date)}</span></div>
       <div class="batch-details">
         <div class="batch-detail"><span class="batch-detail-label">Ilość</span><span class="batch-detail-value">${batch.weight}g</span></div>
