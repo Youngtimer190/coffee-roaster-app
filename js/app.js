@@ -390,10 +390,12 @@ async saveProfile() {
     this.currentView = viewName;
   }
 
-  async loadProfiles() {
-    this.profiles = await this.fetchProfiles();
-    this.renderProfiles();
-  }
+ async loadProfiles() {
+ const profilesList = document.getElementById('profilesList');
+ if (profilesList) profilesList.innerHTML = this.createSkeletonHTML('profile-card').repeat(3);
+ this.profiles = await this.fetchProfiles();
+ this.renderProfiles();
+ }
 
   renderProfiles() {
     console.log('renderProfiles: start, profiles count:', this.profiles.length);
@@ -779,10 +781,12 @@ async saveProfile() {
     }
   }
 
-  async loadBatches() {
-    this.batches = await this.fetchBatches();
-    this.renderBatches();
-  }
+ async loadBatches() {
+ const batchesList = document.getElementById('batchesList');
+ if (batchesList) batchesList.innerHTML = this.createSkeletonHTML('batch-card').repeat(3);
+ this.batches = await this.fetchBatches();
+ this.renderBatches();
+ }
 
   renderBatches() {
     const searchTerm = document.getElementById('batchSearch')?.value?.toLowerCase() || '';
