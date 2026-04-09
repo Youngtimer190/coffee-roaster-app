@@ -640,7 +640,7 @@ async saveProfile() {
     modal.addEventListener('click', (e) => { if (e.target === modal) { if (confirm('Czy na pewno chcesz przerwać palenie?')) { this.stopRoasting(); modal.classList.remove('active'); } } });
     document.getElementById('roastingPauseBtn').addEventListener('click', () => this.toggleRoastingPause());
     document.getElementById('roastingFCBtn').addEventListener('click', () => this.recordRoastingFC());
-    document.getElementById('cancelRoastingBtn').addEventListener('click', () => { this.stopRoasting(); modal.classList.remove('active'); });
+    document.getElementById('cancelRoastingBtn').addEventListener('click', () => { if (confirm('Czy na pewno chcesz przerwać palenie?')) { this.stopRoasting(); modal.classList.remove('active'); } });
     document.getElementById('finishRoastingBtn').addEventListener('click', () => this.finishRoasting());
   }
 
