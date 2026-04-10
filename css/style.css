@@ -228,6 +228,11 @@ h4 { font-size: 1.125rem; }
 }
 
 .nav-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -542,6 +547,7 @@ h4 { font-size: 1.125rem; }
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .stat-card::before {
@@ -650,6 +656,7 @@ h4 { font-size: 1.125rem; }
   border: 1px solid var(--glass-border);
   transition: all var(--duration-normal) var(--ease-out);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .batch-card::before, .profile-card::before {
@@ -932,6 +939,7 @@ h4 { font-size: 1.125rem; }
   color: var(--text-primary);
   transition: all var(--duration-fast);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .filters input::placeholder {
@@ -978,7 +986,7 @@ h4 { font-size: 1.125rem; }
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   width: 100%;
   max-width: 500px;
-  max-height: 92vh;
+  max-height: calc(100vh - 100px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   border: 1px solid var(--glass-border);
@@ -1082,6 +1090,7 @@ h4 { font-size: 1.125rem; }
   color: var(--text-primary);
   transition: all var(--duration-fast);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .form-group input::placeholder, .form-group textarea::placeholder {
@@ -1173,6 +1182,7 @@ select {
   padding: var(--space-6);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .calc-card::before {
@@ -1198,6 +1208,10 @@ select {
 }
 
 .calc-form .form-group {
+  margin-bottom: var(--space-3);
+}
+
+.calc-form .btn {
   margin-bottom: var(--space-3);
 }
 
@@ -1233,8 +1247,10 @@ select {
   background: var(--glass-bg);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
+  padding-bottom: var(--space-4);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .stopwatch-display {
@@ -1263,8 +1279,10 @@ select {
 }
 
 .stopwatch-controls .btn svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  flex-shrink: 0;
 }
 
 /* Sticky Stopwatch */
@@ -1274,15 +1292,17 @@ select {
   left: 0;
   right: 0;
   z-index: var(--z-modal);
-  background: rgba(15, 13, 12, 0.95);
+  background: rgba(15, 13, 12, 0.98);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: var(--space-4) var(--space-5);
-  padding-top: calc(var(--space-4) + env(safe-area-inset-top, 0px));
+  padding-top: max(70px, calc(var(--space-6) + env(safe-area-inset-top, 50px)));
   box-shadow: var(--shadow-lg);
   animation: slideDown 0.3s var(--ease-out);
   border-radius: 0;
   border: none;
   border-bottom: 1px solid var(--glass-border);
+  -webkit-transform: translateZ(0);
 }
 
 @keyframes slideDown {
@@ -1316,24 +1336,53 @@ select {
   max-width: none;
 }
 
+.stopwatch.is-sticky .stopwatch-controls .btn svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+.stopwatch.is-sticky .first-crack-section {
+  display: block;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.stopwatch.is-sticky .first-crack-section .btn-primary {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.875rem;
+  min-height: 44px;
+}
+
+.stopwatch.is-sticky .first-crack-result {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
 .stopwatch-placeholder {
   display: none;
 }
 
 .stopwatch-placeholder.active {
   display: block;
-  height: 200px;
+  height: 280px;
 }
 
 /* First Crack Section */
 .first-crack-section {
-  margin-bottom: var(--space-5);
-  padding-bottom: var(--space-5);
+  margin-top: var(--space-5);
+  margin-bottom: 0;
+  padding-top: var(--space-5);
+  padding-bottom: 0;
   border-top: 1px solid var(--glass-border);
   text-align: center;
 }
 
 .first-crack-section .btn-primary {
+  margin-bottom: 0;
   background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(255, 140, 66, 0.15) 50%, rgba(251, 191, 36, 0.2) 100%);
   box-shadow: 0 2px 12px rgba(251, 191, 36, 0.3);
 }
@@ -1344,8 +1393,9 @@ select {
 }
 
 .first-crack-result {
-  margin-top: var(--space-4);
-  padding: var(--space-4);
+  margin-top: var(--space-3);
+  margin-bottom: 0;
+  padding: var(--space-3);
   background: rgba(251, 191, 36, 0.1);
   border-radius: var(--radius-md);
   border: 1px solid rgba(251, 191, 36, 0.2);
@@ -1469,7 +1519,7 @@ select {
    ═══════════════════════════════════════════════════════════════════════════ */
 .toast-container {
   position: fixed;
-  bottom: var(--space-5);
+  top: max(var(--space-5), env(safe-area-inset-top, 20px));
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-toast);
@@ -1478,7 +1528,6 @@ select {
   gap: var(--space-2);
   width: 90%;
   max-width: 400px;
-  padding-top: env(safe-area-inset-top);
 }
 
 .toast {
@@ -1495,6 +1544,7 @@ select {
   gap: var(--space-3);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .toast.success {
@@ -1567,6 +1617,7 @@ select {
    ═══════════════════════════════════════════════════════════════════════════ */
 .profile-view-body {
   padding: var(--space-6);
+  padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 20px));
 }
 
 .profile-view-info {
@@ -1715,6 +1766,7 @@ select {
   padding: var(--space-5);
   font-size: 1rem;
   font-weight: 700;
+  margin-top: var(--space-4);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2249,6 +2301,64 @@ select {
 /* ═══════════════════════════════════════════════════════════════════════════
    PRINT STYLES
    ═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════
+ CONFIRM MODAL
+ ═══════════════════════════════════════════════════════════════════════════ */
+.confirm-modal {
+  align-items: center !important;
+  -webkit-align-items: center !important;
+  justify-content: center !important;
+  -webkit-justify-content: center !important;
+  padding: var(--space-6);
+  padding-top: max(var(--space-6), env(safe-area-inset-top, 20px));
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom, 20px));
+}
+
+.confirm-modal .modal-content {
+  margin: auto;
+  max-height: 90vh;
+}
+
+.confirm-modal-content {
+  max-width: 340px;
+  text-align: center;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
+  margin: auto;
+}
+
+.confirm-body {
+  padding: var(--space-8) var(--space-6) var(--space-4);
+}
+
+.confirm-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+}
+
+.confirm-body h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  color: var(--text-primary);
+}
+
+.confirm-body p {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.confirm-actions .btn {
+  flex: 1;
+}
+
 @media print {
   .navbar, .modal, .btn, .fab {
     display: none !important;
@@ -2277,6 +2387,15 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* Fix button SVG icons in Safari */
+.stopwatch-controls .btn svg {
+  transform: translateZ(0);
+}
+
+.stopwatch.is-sticky .stopwatch-controls .btn {
+  -webkit-transform: translateZ(0);
 }
 
 /* Prevent overscroll */
