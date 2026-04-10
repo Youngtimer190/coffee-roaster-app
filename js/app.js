@@ -194,13 +194,13 @@ class CoffeeRoasterApp {
     if (menuToggle && navMenu) menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
   }
 
- // Sanityzacja HTML - zapobiega XSS
- escapeHtml(text) {
- if (!text) return '';
- const div = document.createElement('div');
- div.textContent = text;
- return div.innerHTML;
- }
+  // Sanityzacja HTML - zapobiega XSS
+  escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 
   formatDate(dateString) {
     const date = new Date(dateString);
@@ -215,6 +215,37 @@ class CoffeeRoasterApp {
     toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span class="toast-message">${message}</span>`;
     container.appendChild(toast);
     setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, 3000);
+  }
+
+  showConfirm(title, message, onConfirm, options = {}) {
+    const modal = document.getElementById('confirmModal');
+    const iconEl = document.getElementById('confirmIcon');
+    const titleEl = document.getElementById('confirmTitle');
+    const messageEl = document.getElementById('confirmMessage');
+    const cancelBtn = document.getElementById('confirmCancel');
+    const okBtn = document.getElementById('confirmOk');
+
+    iconEl.textContent = options.icon || '⚠️';
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+
+    const closeModal = () => {
+      modal.classList.remove('active');
+    };
+
+    // Remove old listeners by cloning
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    const newOkBtn = okBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+
+    newCancelBtn.addEventListener('click', closeModal);
+    newOkBtn.addEventListener('click', () => {
+      closeModal();
+      if (onConfirm) onConfirm();
+    });
+
+    modal.classList.add('active');
   }
 
   // ===== DASHBOARD =====
@@ -249,15 +280,25 @@ class CoffeeRoasterApp {
   setupProfileModal() {
     const modal = document.getElementById('profileModal');
     document.getElementById('addProfileBtn').addEventListener('click', () => this.openProfileModal());
-    modal.querySelector('.modal-close').addEventListener('click', () => this.closeProfileModal());
+    modal.querySelector('.modal-close').addEventListener('click', () => {
+			this.showConfirm('Zamknąć?', 'Czy na pewno chcesz zamknąć? Wprowadzone dane zostaną utracone.', () => {
+				this.closeProfileModal();
+			});
+		});
     modal.querySelector('.modal-cancel').addEventListener('click', () => {
-          if (confirm('Czy na pewno chcesz anulować? Wprowadzone dane zostaną utracone.')) {
-            this.closeProfileModal();
-          }
-        });
+      this.showConfirm('Anulować?', 'Czy na pewno chcesz anulować? Wprowadzone dane zostaną utracone.', () => {
+        this.closeProfileModal();
+      });
+    });
     document.getElementById('addStageBtn').addEventListener('click', () => this.addStageRow());
     document.getElementById('profileForm').addEventListener('submit', async (e) => { e.preventDefault(); await this.saveProfile(); });
-    modal.addEventListener('click', (e) => { if (e.target === modal) this.closeProfileModal(); });
+    modal.addEventListener('click', (e) => {
+			if (e.target === modal) {
+				this.showConfirm('Zamknąć?', 'Czy na pewno chcesz zamknąć? Wprowadzone dane zostaną utracone.', () => {
+					this.closeProfileModal();
+				});
+			}
+		});
     this.setupStopwatch();
     const firstCrackBtn = document.getElementById('firstCrackBtn');
     if (firstCrackBtn) firstCrackBtn.addEventListener('click', () => this.recordFirstCrack());
@@ -307,13 +348,13 @@ class CoffeeRoasterApp {
   createStageRowHTML(num, stage = {}) {
     const isFC = stage.note && stage.note.toLowerCase().includes('first crack');
     return `<div class="stage-row ${isFC ? 'stage-fc' : ''}" data-stage="${num}">
-      <button type="button" class="btn-remove-stage">×</button>
-      <div class="stage-header"><span class="${isFC ? 'stage-num stage-num-fc' : 'stage-num'}">${isFC ? 'FC' : num}</span></div>
-      <div class="stage-fields">
-        <div class="stage-field"><label class="stage-label">Temp.</label><input type="number" class="stage-temp" placeholder="°C" min="0" max="300" value="${stage.temp || ''}"></div>
-        <div class="stage-field"><label class="stage-label">Czas</label><input type="text" class="stage-time" placeholder="mm:ss" value="${stage.time || '00:00'}"></div>
-        <div class="stage-field stage-field-note"><label class="stage-label">Notatka</label><input type="text" class="stage-note" placeholder="np. first crack" value="${stage.note || ''}"></div>
-      </div></div>`;
+ <button type="button" class="btn-remove-stage">×</button>
+ <div class="stage-header"><span class="${isFC ? 'stage-num stage-num-fc' : 'stage-num'}">${isFC ? 'FC' : num}</span></div>
+ <div class="stage-fields">
+ <div class="stage-field"><label class="stage-label">Temp.</label><input type="number" class="stage-temp" placeholder="°C" min="0" max="300" value="${stage.temp || ''}"></div>
+ <div class="stage-field"><label class="stage-label">Czas</label><input type="text" class="stage-time" placeholder="mm:ss" value="${stage.time || '00:00'}"></div>
+ <div class="stage-field stage-field-note"><label class="stage-label">Notatka</label><input type="text" class="stage-note" placeholder="np. first crack" value="${stage.note || ''}"></div>
+ </div></div>`;
   }
 
   addStageRow() {
@@ -402,12 +443,12 @@ async saveProfile() {
     this.currentView = viewName;
   }
 
- async loadProfiles() {
- const profilesList = document.getElementById('profilesList');
- if (profilesList) profilesList.innerHTML = this.createSkeletonHTML('profile-card').repeat(3);
- this.profiles = await this.fetchProfiles();
- this.renderProfiles();
- }
+  async loadProfiles() {
+    const profilesList = document.getElementById('profilesList');
+    if (profilesList) profilesList.innerHTML = this.createSkeletonHTML('profile-card').repeat(3);
+    this.profiles = await this.fetchProfiles();
+    this.renderProfiles();
+  }
 
   renderProfiles() {
     console.log('renderProfiles: start, profiles count:', this.profiles.length);
@@ -418,20 +459,20 @@ async saveProfile() {
       return;
     }
     container.innerHTML = this.profiles.map(profile => `
-      <div class="profile-card" data-id="${profile.id}">
-        <div class="profile-header"><span class="profile-name">${this.escapeHtml(profile.name)}</span><span class="profile-type">${profile.beanType || 'arabica'}</span></div>
-        ${profile.origin ? `<div class="card-body" style="margin-bottom: 8px;">📍 ${this.escapeHtml(profile.origin)}</div>` : ''}
-        <div class="profile-info"><span>${profile.stages?.length || 0} etapów</span><span>Utworzony: ${this.formatDate(profile.createdAt)}</span></div>
-        <div class="profile-actions">
-          <button onclick="app.openProfileModal('${profile.id}')">Edytuj</button>
-          <button onclick="app.useProfile('${profile.id}')">Użyj</button>
-          <button class="btn-delete" onclick="app.deleteProfile('${profile.id}')">Usuń</button>
-        </div>
-      </div>`).join('');
+    <div class="profile-card" data-id="${profile.id}">
+    <div class="profile-header"><span class="profile-name">${this.escapeHtml(profile.name)}</span><span class="profile-type">${profile.beanType || 'arabica'}</span></div>
+    ${profile.origin ? `<div class="card-body" style="margin-bottom: 8px;">📍 ${this.escapeHtml(profile.origin)}</div>` : ''}
+    <div class="profile-info"><span>${profile.stages?.length || 0} etapów</span><span>Utworzony: ${this.formatDate(profile.createdAt)}</span></div>
+    <div class="profile-actions">
+    <button onclick="app.openProfileModal('${profile.id}')">Edytuj</button>
+    <button onclick="app.useProfile('${profile.id}')">Użyj</button>
+    <button class="btn-delete" onclick="app.deleteProfile('${profile.id}')">Usuń</button>
+    </div>
+    </div>`).join('');
   }
 
   async deleteProfile(id) {
-    if (confirm('Czy na pewno chcesz usunąć ten profil?')) {
+    this.showConfirm('Usunąć profil?', 'Czy na pewno chcesz usunąć ten profil?', async () => {
       const success = await this.deleteProfileFromDB(id);
       if (success) {
         this.switchToView('profiles');
@@ -442,7 +483,7 @@ async saveProfile() {
       } else {
         this.showToast('Błąd usuwania profilu', 'error');
       }
-    }
+    }, { icon: '🗑️' });
   }
 
   useProfile(profileId) {
@@ -462,12 +503,12 @@ async saveProfile() {
         const isFC = stage.note && stage.note.toLowerCase().includes('first crack');
         if (isFC) hasFCStage = true;
         stagesHTML += `<div class="profile-view-stage ${isFC ? 'stage-fc' : ''}">
-          <span class="profile-view-stage-num ${isFC ? 'stage-num-fc' : ''}">${isFC ? 'FC' : index + 1}</span>
-          <div class="profile-view-stage-info">
-            <span class="profile-view-stage-time">${stage.time || '--:--'}</span>
-            <span class="profile-view-stage-temp">${stage.temp ? stage.temp + '°C' : '--°C'}</span>
-            ${isFC ? '<span class="profile-view-stage-label">First Crack</span>' : `<span class="profile-view-stage-note">${this.escapeHtml(stage.note) || ''}</span>`}
-          </div></div>`;
+        <span class="profile-view-stage-num ${isFC ? 'stage-num-fc' : ''}">${isFC ? 'FC' : index + 1}</span>
+        <div class="profile-view-stage-info">
+        <span class="profile-view-stage-time">${stage.time || '--:--'}</span>
+        <span class="profile-view-stage-temp">${stage.temp ? stage.temp + '°C' : '--°C'}</span>
+        ${isFC ? '<span class="profile-view-stage-label">First Crack</span>' : `<span class="profile-view-stage-note">${this.escapeHtml(stage.note) || ''}</span>`}
+        </div></div>`;
       });
     }
     if (!hasFCStage) stagesHTML += `<div class="profile-view-stage stage-estimated-fc"><span class="profile-view-stage-num">?</span><div class="profile-view-stage-info"><span class="profile-view-stage-time">--:--</span><span class="profile-view-stage-note">Szacowany First Crack</span><span class="profile-view-stage-label estimated">Szacowany FC</span></div></div>`;
@@ -516,12 +557,12 @@ async saveProfile() {
         const isFC = stage.note && stage.note.toLowerCase().includes('first crack');
         if (isFC) hasFCStage = true;
         stagesHTML += `<div class="roasting-stage ${isFC ? 'stage-fc' : ''} upcoming" data-index="${index}" data-time="${this.timeToSeconds(stage.time)}" data-fc="${isFC}">
-          <span class="roasting-stage-num">${isFC ? 'FC' : index + 1}</span>
-          <div class="roasting-stage-info">
-            <span class="roasting-stage-time">${stage.time || '--:--'}</span>
-            <span class="roasting-stage-temp">${stage.temp ? stage.temp + '°C' : ''}</span>
-            ${isFC ? '<span class="roasting-stage-label">First Crack</span>' : `<span class="roasting-stage-note">${this.escapeHtml(stage.note) || ''}</span>`}
-          </div></div>`;
+        <span class="roasting-stage-num">${isFC ? 'FC' : index + 1}</span>
+        <div class="roasting-stage-info">
+        <span class="roasting-stage-time">${stage.time || '--:--'}</span>
+        <span class="roasting-stage-temp">${stage.temp ? stage.temp + '°C' : ''}</span>
+        ${isFC ? '<span class="roasting-stage-label">First Crack</span>' : `<span class="roasting-stage-note">${this.escapeHtml(stage.note) || ''}</span>`}
+        </div></div>`;
       });
     }
     if (!hasFCStage) stagesHTML += `<div class="roasting-stage estimated-fc upcoming" data-index="fc-estimated" data-fc="true"><span class="roasting-stage-num">?</span><div class="roasting-stage-info"><span class="roasting-stage-time">--:--</span><span class="roasting-stage-note">Szacowany First Crack</span><span class="roasting-stage-label">Szacowany FC</span></div></div>`;
@@ -562,15 +603,15 @@ async saveProfile() {
       if (stageTime > 0 && this.roastingTime >= stageTime) { currentStageIndex = i; break; }
     }
     const stageChanged = this.lastStageIndex !== currentStageIndex;
- if (stageChanged) this.playStageChangeSound();
+    if (stageChanged) this.playStageChangeSound();
     this.lastStageIndex = currentStageIndex;
     stages.forEach(s => s.classList.remove('completed', 'active', 'upcoming'));
- let activeStageEl = null;
+    let activeStageEl = null;
     stageElements.forEach((stageEl, index) => {
       if (index < currentStageIndex) stageEl.classList.add('completed');
       else if (index === currentStageIndex) {
         stageEl.classList.add('active');
- activeStageEl = stageEl;
+        activeStageEl = stageEl;
         const note = stageEl.querySelector('.roasting-stage-note')?.textContent;
         const label = stageEl.querySelector('.roasting-stage-label');
         if (label && stageEl.classList.contains('stage-fc')) currentStageName = label.textContent;
@@ -578,10 +619,10 @@ async saveProfile() {
         else currentStageName = `Etap ${index + 1}`;
       } else stageEl.classList.add('upcoming');
     });
- // Automatyczne scrollowanie do aktywnego etapu
- if (stageChanged && activeStageEl) {
- activeStageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
- }
+    // Automatyczne scrollowanie do aktywnego etapu
+    if (stageChanged && activeStageEl) {
+      activeStageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
     document.getElementById('roastingCurrentStage').querySelector('.current-stage-name').textContent = currentStageName;
   }
 
@@ -657,11 +698,28 @@ async saveProfile() {
 
   setupRoastingModal() {
     const modal = document.getElementById('roastingModal');
-    modal.querySelector('.modal-close').addEventListener('click', () => { if (confirm('Czy na pewno chcesz przerwać palenie?')) { this.stopRoasting(); modal.classList.remove('active'); } });
-    modal.addEventListener('click', (e) => { if (e.target === modal) { if (confirm('Czy na pewno chcesz przerwać palenie?')) { this.stopRoasting(); modal.classList.remove('active'); } } });
+    modal.querySelector('.modal-close').addEventListener('click', () => {
+      this.showConfirm('Przerwać palenie?', 'Czy na pewno chcesz przerwać palenie?', () => {
+        this.stopRoasting();
+        modal.classList.remove('active');
+      }, { icon: '🔥' });
+    });
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        this.showConfirm('Przerwać palenie?', 'Czy na pewno chcesz przerwać palenie?', () => {
+          this.stopRoasting();
+          modal.classList.remove('active');
+        }, { icon: '🔥' });
+      }
+    });
     document.getElementById('roastingPauseBtn').addEventListener('click', () => this.toggleRoastingPause());
     document.getElementById('roastingFCBtn').addEventListener('click', () => this.recordRoastingFC());
-    document.getElementById('cancelRoastingBtn').addEventListener('click', () => { if (confirm('Czy na pewno chcesz przerwać palenie?')) { this.stopRoasting(); modal.classList.remove('active'); } });
+    document.getElementById('cancelRoastingBtn').addEventListener('click', () => {
+      this.showConfirm('Przerwać palenie?', 'Czy na pewno chcesz przerwać palenie?', () => {
+        this.stopRoasting();
+        modal.classList.remove('active');
+      }, { icon: '🔥' });
+    });
     document.getElementById('finishRoastingBtn').addEventListener('click', () => this.finishRoasting());
   }
 
@@ -724,16 +782,26 @@ async saveProfile() {
   setupBatchModal() {
     const modal = document.getElementById('batchModal');
     document.getElementById('addBatchBtn').addEventListener('click', () => this.openBatchModal());
-    modal.querySelector('.modal-close').addEventListener('click', () => this.closeBatchModal());
+    modal.querySelector('.modal-close').addEventListener('click', () => {
+			this.showConfirm('Zamknąć?', 'Czy na pewno chcesz zamknąć? Wprowadzone dane zostaną utracone.', () => {
+				this.closeBatchModal();
+			});
+		});
     modal.querySelector('.modal-cancel').addEventListener('click', () => {
-          if (confirm('Czy na pewno chcesz anulować? Wprowadzone dane zostaną utracone.')) {
-            this.closeBatchModal();
-          }
-        });
+      this.showConfirm('Anulować?', 'Czy na pewno chcesz anulować? Wprowadzone dane zostaną utracone.', () => {
+        this.closeBatchModal();
+      });
+    });
     const ratingInput = document.getElementById('batchRating');
     ratingInput.addEventListener('input', (e) => modal.querySelector('.rating-value').textContent = e.target.value);
     document.getElementById('batchForm').addEventListener('submit', async (e) => { e.preventDefault(); await this.saveBatch(); });
-    modal.addEventListener('click', (e) => { if (e.target === modal) this.closeBatchModal(); });
+    modal.addEventListener('click', (e) => {
+			if (e.target === modal) {
+				this.showConfirm('Zamknąć?', 'Czy na pewno chcesz zamknąć? Wprowadzone dane zostaną utracone.', () => {
+					this.closeBatchModal();
+				});
+			}
+		});
   }
 
   openBatchModal(batchId = null) {
@@ -797,12 +865,12 @@ async saveProfile() {
     }
   }
 
- async loadBatches() {
- const batchesList = document.getElementById('batchesList');
- if (batchesList) batchesList.innerHTML = this.createSkeletonHTML('batch-card').repeat(3);
- this.batches = await this.fetchBatches();
- this.renderBatches();
- }
+  async loadBatches() {
+    const batchesList = document.getElementById('batchesList');
+    if (batchesList) batchesList.innerHTML = this.createSkeletonHTML('batch-card').repeat(3);
+    this.batches = await this.fetchBatches();
+    this.renderBatches();
+  }
 
   renderBatches() {
     const searchTerm = document.getElementById('batchSearch')?.value?.toLowerCase() || '';
@@ -827,34 +895,34 @@ async saveProfile() {
     const profileName = batch.profileName || this.profiles.find(p => p.id === batch.profileId)?.name || 'Brak profilu';
     const roastLevelNames = { 'green': 'Zielona', 'cinnamon': 'Cynamonowa', 'light': 'Jasna', 'medium': 'Średnia', 'medium-dark': 'Średnio-ciemna', 'dark': 'Ciemna', 'french': 'French', 'italian': 'Italian' };
     return `<div class="batch-card" data-id="${batch.id}">
-      <div class="batch-header"><div><div class="batch-title">${this.escapeHtml(profileName)}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span></div><span class="batch-date">${this.formatDate(batch.date)}</span></div>
-      <div class="batch-details">
-        <div class="batch-detail"><span class="batch-detail-label">Ilość</span><span class="batch-detail-value">${batch.weight}g</span></div>
-        <div class="batch-detail"><span class="batch-detail-label">Czas</span><span class="batch-detail-value">${batch.duration ? batch.duration + ' min' : '-'}</span></div>
-        <div class="batch-detail"><span class="batch-detail-label">Temp.</span><span class="batch-detail-value">${batch.finalTemp ? batch.finalTemp + '°C' : '-'}</span></div>
-        <div class="batch-detail"><span class="batch-detail-label">Ocena</span><span class="batch-detail-value">${batch.rating}/10</span></div>
-      </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${this.escapeHtml(batch.notes)}</div>` : ''}</div>`;
+    <div class="batch-header"><div><div class="batch-title">${this.escapeHtml(profileName)}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span></div><span class="batch-date">${this.formatDate(batch.date)}</span></div>
+    <div class="batch-details">
+    <div class="batch-detail"><span class="batch-detail-label">Ilość</span><span class="batch-detail-value">${batch.weight}g</span></div>
+    <div class="batch-detail"><span class="batch-detail-label">Czas</span><span class="batch-detail-value">${batch.duration ? batch.duration + ' min' : '-'}</span></div>
+    <div class="batch-detail"><span class="batch-detail-label">Temp.</span><span class="batch-detail-value">${batch.finalTemp ? batch.finalTemp + '°C' : '-'}</span></div>
+    <div class="batch-detail"><span class="batch-detail-label">Ocena</span><span class="batch-detail-value">${batch.rating}/10</span></div>
+    </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${this.escapeHtml(batch.notes)}</div>` : ''}</div>`;
   }
 
   createBatchListItemHTML(batch) {
     const profileName = batch.profileName || this.profiles.find(p => p.id === batch.profileId)?.name || 'Brak profilu';
     const roastLevelNames = { 'green': 'Zielona', 'cinnamon': 'Cynamonowa', 'light': 'Jasna', 'medium': 'Średnia', 'medium-dark': 'Średnio-ciemna', 'dark': 'Ciemna', 'french': 'French', 'italian': 'Italian' };
     return `<div class="batch-card" data-id="${batch.id}">
-      <div class="batch-header"><div><div class="batch-title">${this.escapeHtml(profileName)}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span>
-      <div class="batch-rating">${'⭐'.repeat(batch.rating || 0)}${'☆'.repeat(10 - (batch.rating || 0))}</div></div><span class="batch-date">${this.formatDate(batch.date)}</span></div>
-      <div class="batch-details">
-        <div class="batch-detail"><span class="batch-detail-label">Ilość</span><span class="batch-detail-value">${batch.weight}g</span></div>
-        <div class="batch-detail"><span class="batch-detail-label">Czas</span><span class="batch-detail-value">${batch.duration ? batch.duration + ' min' : '-'}</span></div>
-        <div class="batch-detail"><span class="batch-detail-label">Temp. końcowa</span><span class="batch-detail-value">${batch.finalTemp ? batch.finalTemp + '°C' : '-'}</span></div>
-      </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${this.escapeHtml(batch.notes)}</div>` : ''}
-      <div class="profile-actions" style="margin-top: 12px;">
-        <button class="btn-edit-batch" data-id="${batch.id}">Edytuj</button>
-        <button class="btn-delete" data-id="${batch.id}">Usuń</button>
-      </div></div>`;
+    <div class="batch-header"><div><div class="batch-title">${this.escapeHtml(profileName)}</div><span class="roast-level-badge roast-${batch.roastLevel}">${roastLevelNames[batch.roastLevel] || 'Nieznany'}</span>
+    <div class="batch-rating">${'⭐'.repeat(batch.rating || 0)}${'☆'.repeat(10 - (batch.rating || 0))}</div></div><span class="batch-date">${this.formatDate(batch.date)}</span></div>
+    <div class="batch-details">
+    <div class="batch-detail"><span class="batch-detail-label">Ilość</span><span class="batch-detail-value">${batch.weight}g</span></div>
+    <div class="batch-detail"><span class="batch-detail-label">Czas</span><span class="batch-detail-value">${batch.duration ? batch.duration + ' min' : '-'}</span></div>
+    <div class="batch-detail"><span class="batch-detail-label">Temp. końcowa</span><span class="batch-detail-value">${batch.finalTemp ? batch.finalTemp + '°C' : '-'}</span></div>
+    </div>${batch.notes ? `<div class="card-body" style="margin-top: 10px; font-size: 13px;">${this.escapeHtml(batch.notes)}</div>` : ''}
+    <div class="profile-actions" style="margin-top: 12px;">
+    <button class="btn-edit-batch" data-id="${batch.id}">Edytuj</button>
+    <button class="btn-delete" data-id="${batch.id}">Usuń</button>
+    </div></div>`;
   }
 
   async deleteBatch(id) {
-    if (confirm('Czy na pewno chcesz usunąć tę partię?')) {
+    this.showConfirm('Usunąć partię?', 'Czy na pewno chcesz usunąć tę partię?', async () => {
       const success = await this.deleteBatchFromDB(id);
       if (success) {
         this.batches = await this.fetchBatches();
@@ -862,7 +930,7 @@ async saveProfile() {
         await this.loadDashboard();
         this.showToast('Partia usunięta', 'warning');
       } else { this.showToast('Błąd usuwania partii', 'error'); }
-    }
+    }, { icon: '🗑️' });
   }
 
   // ===== STOPER =====
@@ -925,17 +993,17 @@ async saveProfile() {
     if (!container) return;
     const mins = Math.floor(this.stopwatchTime / 60);
     const secs = this.stopwatchTime % 60;
-    const timeStr = mins.toString().padStart(2,'0') + ':' + secs.toString().padStart(2,'0');
+    const timeStr = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
     const fcStage = document.createElement('div');
     fcStage.className = 'stage-row stage-fc';
     fcStage.dataset.stage = 'fc';
     fcStage.innerHTML = `<button type="button" class="btn-remove-stage">×</button>
-      <div class="stage-header"><span class="stage-num stage-num-fc">FC</span></div>
-      <div class="stage-fields">
-        <div class="stage-field"><label class="stage-label">Temp.</label><input type="number" class="stage-temp" placeholder="°C" min="0" max="300"></div>
-        <div class="stage-field"><label class="stage-label">Czas</label><input type="text" class="stage-time" placeholder="mm:ss" value="${timeStr}"></div>
-        <div class="stage-field stage-field-note"><label class="stage-label">Notatka</label><input type="text" class="stage-note" placeholder="np. first crack" value="First Crack"></div>
-      </div>`;
+    <div class="stage-header"><span class="stage-num stage-num-fc">FC</span></div>
+    <div class="stage-fields">
+    <div class="stage-field"><label class="stage-label">Temp.</label><input type="number" class="stage-temp" placeholder="°C" min="0" max="300"></div>
+    <div class="stage-field"><label class="stage-label">Czas</label><input type="text" class="stage-time" placeholder="mm:ss" value="${timeStr}"></div>
+    <div class="stage-field stage-field-note"><label class="stage-label">Notatka</label><input type="text" class="stage-note" placeholder="np. first crack" value="First Crack"></div>
+    </div>`;
     container.appendChild(fcStage);
     this.attachStageListeners();
     fcStage.scrollIntoView({ behavior: 'smooth', block: 'center' });
