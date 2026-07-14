@@ -325,7 +325,7 @@ class CoffeeRoasterApp {
     } else {
       title.textContent = 'Nowy profil';
       form.reset();
-      stagesContainer.innerHTML = this.createStageRowHTML(1);
+ stagesContainer.innerHTML = this.createStageRowHTML(1, { temp: null, time: '00:00' });
     }
     this.attachStageListeners();
     modal.classList.add('active');
@@ -335,8 +335,9 @@ class CoffeeRoasterApp {
     document.getElementById('profileModal').classList.remove('active');
     this.editingProfileId = null;
     if (this.stopwatchInterval) { clearInterval(this.stopwatchInterval); this.stopwatchInterval = null; }
-    this.stopwatchTime = 0; this.stopwatchRunning = false; this.stopwatchSticky = false; this.firstCrackTime = null;
+    this.stopwatchTime = 0; this.stopwatchRunning = false; this.stopwatchSticky = false; this.autoStageInterval = null; this.autoStageCounter = 0; this.firstCrackTime = null;
     this.updateStopwatchDisplay();
+this.updateToggleBtn();
     this.releaseWakeLock(); this.stopIosWakeLock();
     const stopwatchEl = this.stopwatchEl(); const placeholderEl = this.placeholderEl();
     if (stopwatchEl) stopwatchEl.classList.remove('is-sticky');
@@ -364,7 +365,7 @@ class CoffeeRoasterApp {
     const secs = this.stopwatchTime % 60;
     const timeStr = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
     const newRow = document.createElement('div');
-    newRow.innerHTML = this.createStageRowHTML(currentRows.length + 1, { time: timeStr });
+ newRow.innerHTML = this.createStageRowHTML(currentRows.length + 1, { temp: null, time: timeStr });
     container.appendChild(newRow.firstElementChild);
     this.attachStageListeners();
     container.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -939,37 +940,64 @@ async saveProfile() {
     this.stopwatchTime = 0;
     this.stopwatchRunning = false;
     this.stopwatchSticky = false;
-    const startBtn = document.getElementById('stopwatchStart');
-    const pauseBtn = document.getElementById('stopwatchPause');
-    const resetBtn = document.getElementById('stopwatchReset');
-    if (startBtn) startBtn.addEventListener('click', (e) => { this.startIosWakeLockDirectly(); this.startStopwatch(); });
-    if (pauseBtn) pauseBtn.addEventListener('click', () => this.pauseStopwatch());
-    if (resetBtn) resetBtn.addEventListener('click', () => this.resetStopwatch());
-    this.setupIosWakeLock();
-    this.setupStickyStopwatch();
-  }
+ this.autoStageInterval = null;
+ this.autoStageCounter = 0;
+ const toggleBtn = document.getElementById('stopwatchToggle');
+const resetBtn = document.getElementById('stopwatchReset');
+if (toggleBtn) toggleBtn.addEventListener('click', () => { this.startIosWakeLockDirectly(); this.toggleStopwatch(); });
+if (resetBtn) resetBtn.addEventListener('click', () => this.resetStopwatch());
+this.setupIosWakeLock();
+this.setupStickyStopwatch();
+}
 
-  setupStickyStopwatch() {
-    const stopwatch = this.stopwatchEl();
-    const placeholder = this.placeholderEl();
-    const modalContent = document.getElementById('profileModal')?.querySelector('.modal-content');
-    if (!stopwatch || !modalContent) return;
-    modalContent.addEventListener('scroll', () => {
-      if (!this.stopwatchRunning) return;
-      if (!this.stopwatchSticky) { if (stopwatch.getBoundingClientRect().bottom < 80) this.makeStopwatchSticky(); }
-      else { if (modalContent.scrollTop < 50 || placeholder.getBoundingClientRect().top > 60) this.unmakeStopwatchSticky(); }
-    });
-  }
+toggleStopwatch() {
+if (this.stopwatchRunning) {
+this.pauseStopwatch();
+} else {
+this.startStopwatch();
+}
+this.updateToggleBtn();
+}
+
+updateToggleBtn() {
+const btn = document.getElementById('stopwatchToggle');
+const playIcon = btn?.querySelector('.icon-play');
+const pauseIcon = btn?.querySelector('.icon-pause');
+const btnText = btn?.querySelector('.btn-text');
+if (!btn) return;
+if (this.stopwatchRunning) {
+if (playIcon) playIcon.style.display = 'none';
+if (pauseIcon) pauseIcon.style.display = 'inline';
+if (btnText) btnText.textContent = 'Stop';
+} else {
+if (playIcon) playIcon.style.display = 'inline';
+if (pauseIcon) pauseIcon.style.display = 'none';
+if (btnText) btnText.textContent = 'Start';
+}
+}
+
+setupStickyStopwatch() {
+const stopwatch = this.stopwatchEl();
+const placeholder = this.placeholderEl();
+const modalContent = document.getElementById('profileModal')?.querySelector('.modal-content');
+if (!stopwatch || !modalContent) return;
+modalContent.addEventListener('scroll', () => {
+if (!this.stopwatchRunning && !this.stopwatchSticky) return;
+if (!this.stopwatchSticky) { if (stopwatch.getBoundingClientRect().bottom < 80) this.makeStopwatchSticky(); }
+else { if (modalContent.scrollTop < 50 || placeholder.getBoundingClientRect().top > 60) this.unmakeStopwatchSticky(); }
+});
+}
+
 
   makeStopwatchSticky() { if (this.stopwatchSticky) return; this.stopwatchSticky = true; this.stopwatchEl()?.classList.add('is-sticky'); this.placeholderEl()?.classList.add('active'); }
 
   unmakeStopwatchSticky() { if (!this.stopwatchSticky) return; this.stopwatchSticky = false; this.stopwatchEl()?.classList.remove('is-sticky'); this.placeholderEl()?.classList.remove('active'); }
 
-  startStopwatch() { if (this.stopwatchRunning) return; this.stopwatchRunning = true; this.requestWakeLock(); this.stopwatchInterval = setInterval(() => { this.stopwatchTime++; this.updateStopwatchDisplay(); }, 1000); }
+startStopwatch() { if (this.stopwatchRunning) return; this.stopwatchRunning = true; this.requestWakeLock(); this.initAudioContext(); this.stopwatchInterval = setInterval(() => { this.stopwatchTime++; this.updateStopwatchDisplay(); if (this.stopwatchTime > 0 && this.stopwatchTime % 30 === 0) this.playStageChangeSound(); }, 1000); const firstTimeInput = document.querySelector('.stage-row .stage-time'); if (firstTimeInput) { firstTimeInput.value = '00:00'; } this.autoStageCounter = 0; this.autoStageInterval = setInterval(() => { this.autoStageCounter++; if (this.autoStageCounter >= 30) { this.autoStageCounter = 0; this.addAutoStage(); } }, 1000); }
+	addAutoStage() { const container = document.getElementById('roastStages'); const currentRows = container.querySelectorAll('.stage-row'); const mins = Math.floor(this.stopwatchTime / 60); const secs = this.stopwatchTime % 60; const timeStr = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0'); const tempValue = ''; const newStage = document.createElement('div'); newStage.className = 'stage-row'; newStage.dataset.stage = currentRows.length + 1; newStage.innerHTML = `<button type="button" class="btn-remove-stage">×</button> <div class="stage-header"><span class="stage-num">${currentRows.length + 1}</span></div> <div class="stage-fields"> <div class="stage-field"><label class="stage-label">Temp.</label><input type="number" class="stage-temp" placeholder="°C" min="0" max="300" value="${tempValue}"></div> <div class="stage-field"><label class="stage-label">Czas</label><input type="text" class="stage-time" placeholder="mm:ss" value="${timeStr}"></div> <div class="stage-field stage-field-note"><label class="stage-label">Notatka</label><input type="text" class="stage-note" placeholder="np. first crack" value=""></div> </div>`; container.appendChild(newStage); this.attachStageListeners(); newStage.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+ pauseStopwatch() { this.stopwatchRunning = false; if (this.stopwatchInterval) { clearInterval(this.stopwatchInterval); this.stopwatchInterval = null; } if (this.autoStageInterval) { clearInterval(this.autoStageInterval); this.autoStageInterval = null; } this.releaseWakeLock(); this.stopIosWakeLock(); }
 
-  pauseStopwatch() { this.stopwatchRunning = false; if (this.stopwatchInterval) { clearInterval(this.stopwatchInterval); this.stopwatchInterval = null; } this.releaseWakeLock(); this.stopIosWakeLock(); }
-
-  resetStopwatch() { this.pauseStopwatch(); this.stopwatchTime = 0; this.firstCrackTime = null; this.updateStopwatchDisplay(); this.unmakeStopwatchSticky(); this.releaseWakeLock(); this.stopIosWakeLock(); document.getElementById('firstCrackResult').style.display = 'none'; document.querySelectorAll('.stage-fc').forEach(s => s.remove()); }
+  resetStopwatch() { this.pauseStopwatch(); this.stopwatchTime = 0; this.firstCrackTime = null; this.autoStageCounter = 0; this.updateStopwatchDisplay(); this.unmakeStopwatchSticky(); this.releaseWakeLock(); this.stopIosWakeLock(); document.getElementById('firstCrackResult').style.display = 'none'; document.querySelectorAll('.stage-fc').forEach(s => s.remove()); this.updateToggleBtn(); }
 
   stopwatchEl() { return document.getElementById('stopwatch'); }
 
@@ -994,13 +1022,14 @@ async saveProfile() {
     const mins = Math.floor(this.stopwatchTime / 60);
     const secs = this.stopwatchTime % 60;
     const timeStr = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+ const tempValue = '';
     const fcStage = document.createElement('div');
     fcStage.className = 'stage-row stage-fc';
     fcStage.dataset.stage = 'fc';
     fcStage.innerHTML = `<button type="button" class="btn-remove-stage">×</button>
     <div class="stage-header"><span class="stage-num stage-num-fc">FC</span></div>
     <div class="stage-fields">
-    <div class="stage-field"><label class="stage-label">Temp.</label><input type="number" class="stage-temp" placeholder="°C" min="0" max="300"></div>
+    <div class="stage-field"><label class="stage-label">Temp.</label><input type="number" class="stage-temp" placeholder="°C" min="0" max="300" value="${tempValue}"></div>
     <div class="stage-field"><label class="stage-label">Czas</label><input type="text" class="stage-time" placeholder="mm:ss" value="${timeStr}"></div>
     <div class="stage-field stage-field-note"><label class="stage-label">Notatka</label><input type="text" class="stage-note" placeholder="np. first crack" value="First Crack"></div>
     </div>`;
